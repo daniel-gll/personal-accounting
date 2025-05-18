@@ -1,0 +1,18 @@
+
+
+ - Use "," for decimals.
+
+
+1. Fecha
+    Calendar format, e.g. 18/05/2025
+2. Banco
+    Text format
+    Indicates from which bank / source the row is coming from
+3. Importe
+    Currency format. Positive or negative
+4. Origen
+    Text format
+    Payee / sender
+5. Concepto
+    Text format 
+    Note: "Reference" and other text fields showing the purpose of the transaction or other details get added in here.
