@@ -1,0 +1,91 @@
+# List of Banks
+Banks:
+  - Abanca
+  - DB
+  - N26
+
+# Header column possible names.
+# Name doesn't need to fully match; just to contain the string in the yaml.
+# Case insensitive.
+Headers:
+  - Date:
+    # Format: calendar date
+    - Fecha # E.g. Fecha contable, Fecha valor
+    - Fecha ctble
+    - Fecha contable
+    - Fecha valor
+    - Date
+    - Booking date
+    - Value date
+    - Buchungstag
+    - Wert
+  - Amount:
+    # Format: decimal number
+    - Importe # E.g. Importe, Importe total
+    - Amount
+    - Amount (EUR)
+    - Soll
+    - Haben # For positive transactions in DB
+  - Reference:
+    # Format: string
+    - Referencia
+    - Concepto
+    - Payment Reference
+    - Reference
+    - Verwendungszweck
+    - Kundenreferenz
+  - Description:
+    # Format: string
+    - Descripción
+    - Description
+    - Concepto ampliado # If matching, overwrites "Concepto"
+  - Payee:
+    # Format: string
+    - Beneficiario
+    - Pagador
+    - Payee
+    - Partner name
+    - "Begünstigter / Auftraggeber" # TODO needed?
+    - Begünstigter
+    - Auftraggeber
+  - Type:
+    # Format: string
+    - Tipo de transacción
+    - Tipo
+    - Type
+    - Umsatzart
+  - IBAN:
+    # Format: string
+    - Partner Iban
+    - IBAN
+
+
+  - Balance:
+    # Format: decimal number
+    - Saldo
+    - Balance
+
+
+  - Unused:
+    - Moneda
+    - Account Name
+    - Original amount # In a different currency
+    - Original currency
+    - Exchange rate
+    #DB columns:
+    - Währung
+    - BIC
+    - Mandatsreferenz 
+    - Gläubiger ID
+    - Fremde Gebühren
+    - Betrag
+    - Abweichender Empfänger
+    - Abweichender Auftraggeber
+    - Anzahl der Aufträge
+    - Anzahl der Schecks
+
+
+
+
+
+
