@@ -3,7 +3,6 @@ import os
 
 #variable names in local_settings.yaml
 var1 = "banks_base_path"
-var2 = "banks_csv_filename"
 
 
 def load_local_settings(local_settings_path="local_settings.yaml"):
@@ -22,11 +21,10 @@ def load_local_settings(local_settings_path="local_settings.yaml"):
         try:
             local_settings = yaml.safe_load(f)
             banks_base_path = local_settings[var1]
-            banks_csv_filename = local_settings[var2]
         except yaml.YAMLError as e:
             raise RuntimeError(f"Error parsing '{local_settings_path}': {e}")
         except KeyError:
-            raise KeyError(f"'{var1}' or '{var2}' not found in '{local_settings_path}'.")
+            raise KeyError(f"'{var1}' not found in '{local_settings_path}'.")
     return local_settings
 
 def load_config(config_path="banks_config.yaml"):
@@ -47,8 +45,3 @@ def load_config(config_path="banks_config.yaml"):
         except yaml.YAMLError as e:
             raise RuntimeError(f"Error parsing '{config_path}': {e}")
     return config
-
-# Example usage:
-# local_settings = load_local_settings()
-# base_path = local_settings["base_path"]
-# config = load_config()

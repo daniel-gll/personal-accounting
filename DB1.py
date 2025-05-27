@@ -1,7 +1,8 @@
 # Functions to process CSV files with the bank transactions
 import pandas as pd
+import banks as banks
 
-def load_csv_file(csv_path, bank_name):
+def load_csv_file(csv_path, bank):
     
     """
     Loads a CSV file with specified encodings.
@@ -11,20 +12,13 @@ def load_csv_file(csv_path, bank_name):
     Returns:
         pd.DataFrame: Loaded DataFrame from the CSV file.
     """
-    print(f"Loading CSV file for {bank_name} at {csv_path}")
-    
-    encodings_to_try = ["utf-8", "cp1252", "ISO-8859-1"]
-
-    for enc in encodings_to_try:
-        try:
-            df = pd.read_csv(csv_path, delimiter=';', encoding=enc)
-            break
-        except UnicodeDecodeError:
-            print(f"Failed to load with encoding: {enc}")
-    else:
-        raise UnicodeDecodeError(f"Could not decode {csv_path} with tried encodings: {encodings_to_try}")
-    
-    print(f"Successfully loaded CSV file with encoding: {enc}")
+    try:
+        df = pd.read_csv(csv_path, delimiter=bank.cvs_delimiter, encoding=bank.csv_encoding)
+    except UnicodeDecodeError:
+        print(f"Error! Failed to load csv with at {csv_path} with delimiter {bank.cvs_delimiter} and encoding {bank.csv_encoding}.")
+        raise UnicodeDecodeError(f"Could not decode csv file")
+      
+    print(f"Loaded CSV file for {bank} at {csv_path}")
     return df
 
 
