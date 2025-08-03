@@ -27,7 +27,7 @@ def load_local_settings(local_settings_path="local_settings.yaml"):
             raise KeyError(f"'{var1}' not found in '{local_settings_path}'.")
     return local_settings
 
-def load_config(config_path="banks_config.yaml"):
+def _load_config(config_path="banks_config.yaml"):
     """
     Loads and parses the YAML configuration file.
 

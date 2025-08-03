@@ -2,10 +2,11 @@ class Bank:
     cvs_encodings_options = ["utf-8", "cp1252", "ISO-8859-1"]
     csv_encoding_options = [";", ","]
     
-    def __init__(self, name, csv_encoding, cvs_delimiter, description="", cvs_header_row=0, csv_filename="importar.csv"):
+    def __init__(self, name="Bank", csv_encoding="utf-8", cvs_delimiter=",", header_map={}, description="", cvs_header_row=0, csv_filename="importar.csv"):
         self.name = name
         self.description = description
         self.csv_encoding = csv_encoding
+        # Data validation
         if csv_encoding not in self.cvs_encodings_options:
             raise ValueError(f"Invalid encoding '{csv_encoding}' for bank '{name}'. Available options: {self.cvs_encodings_options}")
         self.cvs_delimiter = cvs_delimiter
@@ -22,6 +23,7 @@ class Bank:
             raise ValueError(
                 f"Invalid CSV filename '{csv_filename}' for bank '{name}'. It should be a non-empty string ending with '.csv'."
         )
+        self.header_map = header_map
     
     def __str__(self):
         return f"{self.name}"
@@ -42,6 +44,7 @@ class Bank:
             "cvs_header_row": self.cvs_header_row,
             "csv_filename": self.csv_filename
         }
+    
 
 class N26(Bank):
     def __init__(self):
@@ -50,7 +53,20 @@ class N26(Bank):
             csv_encoding="utf-8",
             cvs_delimiter=",",
             cvs_header_row=0,
-            csv_filename="importar.csv", 
+            csv_filename="importar.csv",
+            header_map = {
+                "Booking Date":         "Date",
+                "Value Date":           "Unused",
+                "Partner Name":         "Origen",
+                "Partner Iban":         "IBAN",
+                "Type":                 "TransactionType",
+                "Payment Reference":    "Reference",
+                "Account Name":         "Unused",
+                "Amount (EUR)":         "Amount",
+                "Original Amount":      "Unused",
+                "Original Currency":    "Unused",
+                "Exchange Rate":        "Unused",
+            } 
         )
 
 class Abanca(Bank):
@@ -61,6 +77,16 @@ class Abanca(Bank):
             cvs_delimiter=";",
             cvs_header_row=0,
             csv_filename="importar.csv",
+            header_map= {
+                "Fecha ctble":      "Date",
+                "Fecha valor":      "Unused",
+                "Concepto":         "Reference",
+                "Importe":          "Amount",
+                "Moneda":           "Currency",
+                "Saldo":            "Balance",
+                "Concepto ampliado": "Description",
+                "Moneda.1":         "Unused",
+            }
         )
         
 class DB(Bank):
@@ -72,4 +98,25 @@ class DB(Bank):
             cvs_delimiter=";",
             cvs_header_row=4,
             csv_filename="importar.csv",
+            header_map = {
+                "Buchungstag":               "Date",
+                "Wert":                      "Unused",
+                "Umsatzart":                 "TransactionType",
+                "Begünstigter / Auftraggeber": "Origin",
+                "Verwendungszweck":          "Description",
+                "IBAN":                      "IBAN",
+                "BIC":                       "Unused",
+                "Kundenreferenz":            "Unused",
+                "Mandatsreferenz":           "Unused",
+                "Gläubiger ID":              "Unused",
+                "Fremde Gebühren":           "Unused",
+                "Betrag":                    "Unused",
+                "Abweichender Empfänger":    "Unused",
+                "Abweichender Auftraggeber": "Unused",
+                "Anzahl der Aufträge":       "Unused",
+                "Anzahl der Schecks":        "Unused",
+                "Soll":                      "Amount",
+                "Haben":                     "Amount",
+                "Währung":                   "Unused",
+            }
         )

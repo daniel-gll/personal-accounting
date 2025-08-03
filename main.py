@@ -11,28 +11,22 @@ import banks as banks
 #Load base_path from local_settings.yaml
 local_settings = yaml_config.load_local_settings()
 banks_base_path = local_settings["banks_base_path"]
-
-#Load bank configuration
-bank_config = yaml_config.load_config()
-header_categories_list = bank_config["Headers"]
+print("")
+print("")
+print(f"Using banks base path: {banks_base_path}")
 
 # Load CSV file
 for bank_cls in banks.Bank.__subclasses__():
     
     bank = bank_cls()  # instantiate the bank
     print("")
+    print("")
     print(f"Processing bank: {bank}")
-    print("==============================")
+    print("============================")
     csv_path = f"{banks_base_path}\\{bank}\\{bank.csv_filename}"
     
     df = db1.load_csv_file(csv_path, bank)
-
+    
     db1.print_csv_info(df, bank)
-
-    all_matches = db1.match_headers(df, header_categories_list)
-    print("Header matches found:")
-    for col, matched in all_matches.items():
-        print(f"\t{col:<20}\t->\t{matched}")
-        
-
+    
     
