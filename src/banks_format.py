@@ -1,3 +1,8 @@
+# This file contains a list of banks and their configurations for CSV processing.
+# E.g. each bank has a name, CSV encoding, delimiter, header mapping, and other configurations.
+# To add support for a new bank, create a new subclass of the Bank class with the appropriate configurations.
+# Each bank is represented as a subclass of the Bank class.
+
 class Bank:
     cvs_encodings_options = ["utf-8", "cp1252", "ISO-8859-1"]
     csv_encoding_options = [";", ","]

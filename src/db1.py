@@ -1,7 +1,7 @@
 # Functions to process CSV files with the bank transactions
 import pandas as pd
-import banks as banks
-import unified_db as udb
+import banks_format as banks_format
+import unified_format as udb
 
 def load_csv_file(csv_path, bank):
     
@@ -28,9 +28,53 @@ def load_csv_file(csv_path, bank):
     if bank.cvs_header_row > 0:
         print(f"Skipped {bank.cvs_header_row} header rows")
     
-    _compare_headers(df, bank)
+    # Validate headers
+    unmatched_csv, unused_map = _compare_headers(df, bank)
+    
+    # Validate DataFrame contents
+    _validate_dataframe(df, bank)
     
     return df
+
+def _validate_dataframe(df, bank):
+    """
+    Validates DataFrame contents according to bank requirements.
+    Checks for required columns, minimum rows, and missing values.
+    
+    Args:
+        df (pd.DataFrame): DataFrame to validate
+        bank (Bank): Bank instance containing validation rules
+        
+    Raises:
+        ValueError: If validation fails
+    """
+    # Get required column names from header_map
+    date_col = next((csv_col for csv_col, mapped_col in bank.header_map.items() 
+                    if mapped_col == "Date"), None)
+    amount_cols = [csv_col for csv_col, mapped_col in bank.header_map.items() 
+                  if mapped_col == "Amount"]
+    desc_cols = [csv_col for csv_col, mapped_col in bank.header_map.items() 
+                if mapped_col in ["Description", "Reference"]]
+    
+    if not date_col:
+        raise ValueError(f"No Date column mapped in {bank.name}'s header_map")
+    if not amount_cols:
+        raise ValueError(f"No Amount column mapped in {bank.name}'s header_map")
+    if not desc_cols:
+        raise ValueError(f"No Description/Reference column mapped in {bank.name}'s header_map")
+    
+    # Check minimum rows
+    if len(df) < 5:
+        raise ValueError(f"CSV file has only {len(df)} rows. Minimum required: 5 rows")
+    
+    # Check for missing values in required columns
+    missing_dates = df[date_col].isna().sum()
+    if missing_dates > 0:
+        raise ValueError(f"Found {missing_dates} rows with missing dates in column '{date_col}'")
+    
+    # For description, check if at least one description column has a value
+    if all(df[desc_col].isna().all() for desc_col in desc_cols):
+        raise ValueError(f"All rows are missing descriptions in columns {desc_cols}")
 
 
 def print_csv_info(df, bank_name):
@@ -78,7 +122,75 @@ def _compare_headers(df, bank):
     return unmatched_csv, unused_map
 
 
-
+def create_unified_dataframe(df, bank):
+    """
+    Creates a unified DataFrame with standardized headers from a bank-specific DataFrame.
+    
+    Args:
+        df (pd.DataFrame): Source DataFrame with bank-specific headers
+        bank (Bank): Bank instance containing header mapping rules
+        
+    Returns:
+        pd.DataFrame: New DataFrame with unified headers
+    """
+    # Create empty DataFrame with unified headers
+    unified_df = pd.DataFrame(columns=list(udb.ubd.unified_headers.keys()))
+    
+    # Create reverse mapping (unified header -> list of bank headers)
+    reverse_map = {}
+    for bank_header, unified_header in bank.header_map.items():
+        if unified_header not in reverse_map:
+            reverse_map[unified_header] = []
+        reverse_map[unified_header].append(bank_header)
+    
+    # Process each unified header
+    for unified_header, data_type in udb.ubd.unified_headers.items():
+        if unified_header == "Bank":
+            # Fill bank name for all rows
+            unified_df["Bank"] = bank.name
+            continue
+            
+        if unified_header == "Unused":
+            continue
+            
+        if unified_header not in reverse_map:
+            print(f"Warning: No mapping found for unified header '{unified_header}'")
+            continue
+            
+        bank_columns = reverse_map[unified_header]
+        
+        if data_type in ["currency", "YYYY-MM-DD"]:
+            # For Date, Amount, Balance: check for conflicts
+            non_empty_cols = [col for col in bank_columns if not df[col].isna().all()]
+            
+            if len(non_empty_cols) == 0:
+                continue
+            elif len(non_empty_cols) == 1:
+                unified_df[unified_header] = df[non_empty_cols[0]]
+            else:
+                # Check if all columns have the same values where not null
+                first_col = non_empty_cols[0]
+                for other_col in non_empty_cols[1:]:
+                    mask = ~df[first_col].isna() & ~df[other_col].isna()
+                    if not (df.loc[mask, first_col] == df.loc[mask, other_col]).all():
+                        raise ValueError(f"Conflicting values found in {unified_header} columns: {non_empty_cols}")
+                
+                # Combine columns, taking first non-null value for each row
+                unified_df[unified_header] = df[non_empty_cols].bfill(axis=1).iloc[:, 0]
+                
+        elif data_type == "string":
+            # For string types: concatenate non-empty values with warning
+            if len(bank_columns) > 1:
+                print(f"Warning: Multiple columns mapped to {unified_header}: {bank_columns}")
+                
+            # Combine all non-null values with ' | ' separator
+            combined = df[bank_columns].apply(
+                lambda row: ' | '.join(str(val) for val in row.dropna() if str(val).strip()), 
+                axis=1
+            )
+            unified_df[unified_header] = combined
+    
+    return unified_df
 
 
 #========= Deprecated functions =========
