@@ -2,8 +2,13 @@
 import pandas as pd
 import banks_format as banks_format
 import unified_format as udb
+from typing import Dict, List, Optional
+from contextlib import contextmanager
 
-def load_csv_file(csv_path, bank):
+@contextmanager
+def load_csv_file(
+    csv_path: str, 
+    bank: BankConfig):
     
     """
     Loads a CSV file with specified encodings.
@@ -16,17 +21,18 @@ def load_csv_file(csv_path, bank):
     try:
         df = pd.read_csv(
             csv_path, 
-            delimiter=bank.cvs_delimiter, 
+            delimiter=bank.csv_delimiter, 
             encoding=bank.csv_encoding,
-            skiprows=bank.cvs_header_row
+            skiprows=bank.csv_header_row
         )
+        yield df
     except UnicodeDecodeError:
-        print(f"Error! Failed to load csv with at {csv_path} with delimiter {bank.cvs_delimiter} and encoding {bank.csv_encoding}.")
+        print(f"Error! Failed to load csv with at {csv_path} with delimiter {bank.csv_delimiter} and encoding {bank.csv_encoding}.")
         raise ValueError(f"Could not decode csv file: {csv_path}")
       
     print(f"Loaded CSV file for {bank} at {csv_path}")
-    if bank.cvs_header_row > 0:
-        print(f"Skipped {bank.cvs_header_row} header rows")
+    if bank.csv_header_row > 0:
+        print(f"Skipped {bank.csv_header_row} header rows")
     
     # Validate headers
     unmatched_csv, unused_map = _compare_headers(df, bank)
@@ -203,7 +209,7 @@ def validate_csv_headers(csv_path, bank_instance):
     import pandas as pd
 
     # Read only the header row
-    df = pd.read_csv(csv_path, delimiter=bank_instance.cvs_delimiter, encoding=bank_instance.csv_encoding, nrows=0)
+    df = pd.read_csv(csv_path, delimiter=bank_instance.csv_delimiter, encoding=bank_instance.csv_encoding, nrows=0)
     csv_headers = list(df.columns)
 
     # Get the header_map from the bank instance

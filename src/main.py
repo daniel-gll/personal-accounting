@@ -1,6 +1,6 @@
 import pandas as pd
 import yaml_config as yaml_config
-import db1 as db1
+import csv_processor as csv_processor
 import banks_format as banks_format
 
 # TODO: in DB, read top rows of the CSV file and read the starting balance
@@ -25,14 +25,15 @@ for bank_cls in banks_format.Bank.__subclasses__():
     print("==========================")
     csv_path = f"{banks_base_path}\\{bank}\\{bank.csv_filename}"
     
-    df = db1.load_csv_file(csv_path, bank)
+    df = csv_processor.load_csv_file(csv_path, bank)
     
-    db1.print_csv_info(df, bank)
+    csv_processor.print_csv_info(df, bank)
         
     # Create unified DataFrame
-    unified_df = db1.create_unified_dataframe(df, bank)
-    
+    unified_df = csv_processor.create_unified_dataframe(df, bank)
+
     print("\nUnified DataFrame Info:")
-    db1.print_csv_info(unified_df, f"{bank} (Unified)")
-    
-    
+    csv_processor.print_csv_info(unified_df, f"{bank} (Unified)")
+
+    # Validate unified DataFrame
+    csv_processor.validate_dataframe(unified_df, bank)
