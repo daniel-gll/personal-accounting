@@ -78,3 +78,24 @@ def setup_logging(show_time=False, show_logger=False, show_level=False):
         level=log.INFO,
         handlers=[file_handler, stream_handler]
     )
+    
+def print_processing_summary(results):
+    """
+    Print a summary of processing results for banks.
+    
+    Args:
+        results (dict): Dictionary mapping bank names to True/False for success
+    """
+    log.info("\n" + "="*50)
+    log.info("PROCESSING SUMMARY")
+    log.info("="*50)
+    
+    successful = [name for name, success in results.items() if success]
+    failed = [name for name, success in results.items() if not success]
+
+    if successful:
+        log.info(f"Successfully processed: {', '.join(successful)}")
+    if failed:
+        log.error(f"Failed to process: {', '.join(failed)}")
+
+    log.info(f"Total: {len(results)} banks, {len(successful)} successful, {len(failed)} failed")

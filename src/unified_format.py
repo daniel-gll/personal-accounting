@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, List, Optional
+import banks_format as banks
+import pandas as pd
 
 class ParameterType(Enum):
     """Defines the data types for bank transaction parameters."""
@@ -10,7 +12,7 @@ class ParameterType(Enum):
     BOOLEAN = "boolean"
 
 @dataclass(frozen=True)  # Make it hashable by making it immutable
-class BankParamType:
+class BankEntryType:
     description: str
     parameter_type: ParameterType
     mandatory: bool
@@ -21,29 +23,29 @@ class BankParamType:
     
     def __eq__(self, other):
         """Define equality for BankParamType"""
-        if not isinstance(other, BankParamType):
+        if not isinstance(other, BankEntryType):
             return False
         return (self.description == other.description and 
                 self.parameter_type == other.parameter_type and 
                 self.mandatory == other.mandatory)
 
 @dataclass(frozen=True)  # Makes instances immutable and hashable
-class Columns:
+class UnifiedHeaders:
     #parameter_types = [ParameterType.DATE.value, ParameterType.TEXT.value, ParameterType.CURRENCY.value, ParameterType.BOOLEAN.value]
     
     # Define class variables as BankParamType instances
-    date =              BankParamType("Fecha",                   ParameterType.DATE,                   True)  
+    date =              BankEntryType("Fecha",                   ParameterType.DATE,                   True)  
     #bank =              BankParamType("Banco",                   ParameterType.TEXT,                  False)
-    amount =            BankParamType("Importe",                 ParameterType.CURRENCY,               True)
-    transaction_type =  BankParamType("Tipo de transacción",     ParameterType.TEXT,                   False)
-    iban =              BankParamType("IBAN",                    ParameterType.TEXT,                   False)
-    origin =            BankParamType("Origen",                  ParameterType.TEXT,                   False)
-    description =       BankParamType("Descripción",             ParameterType.TEXT,                   True)
-    info_extended =     BankParamType("Descripción extendida",   ParameterType.TEXT,                   False)
-    unused =            BankParamType("Unused",                  ParameterType.TEXT,                   False)
+    amount =            BankEntryType("Importe",                 ParameterType.CURRENCY,               True)
+    transaction_type =  BankEntryType("Tipo de transacción",     ParameterType.TEXT,                   False)
+    iban =              BankEntryType("IBAN",                    ParameterType.TEXT,                   False)
+    origin =            BankEntryType("Origen",                  ParameterType.TEXT,                   False)
+    description =       BankEntryType("Descripción",             ParameterType.TEXT,                   True)
+    info_extended =     BankEntryType("Descripción extendida",   ParameterType.TEXT,                   False)
+    unused =            BankEntryType("Unused",                  ParameterType.TEXT,                   False)
 
     @classmethod
-    def get_mandatory_columns(cls) -> Dict[str, BankParamType]:
+    def get_mandatory_columns(cls) -> Dict[str, BankEntryType]:
         """
         Returns a dictionary of column objects that have mandatory=True.
         
@@ -57,12 +59,12 @@ class Columns:
             if not attr_name.startswith('_'):
                 attr_value = getattr(cls, attr_name)
                 # Check if it's a BankParamType instance and if it's mandatory
-                if isinstance(attr_value, BankParamType) and attr_value.mandatory:
+                if isinstance(attr_value, BankEntryType) and attr_value.mandatory:
                     mandatory_cols[attr_name] = attr_value
         return mandatory_cols
     
     @classmethod
-    def get_all_columns(cls) -> Dict[str, BankParamType]:
+    def get_all_columns(cls) -> Dict[str, BankEntryType]:
         """
         Returns a dictionary of all column objects.
         
@@ -76,7 +78,7 @@ class Columns:
             if not attr_name.startswith('_'):
                 attr_value = getattr(cls, attr_name)
                 # Check if it's a BankParamType instance
-                if isinstance(attr_value, BankParamType):
+                if isinstance(attr_value, BankEntryType):
                     all_cols[attr_name] = attr_value
 
         return all_cols
@@ -95,16 +97,19 @@ class Columns:
             raise ValueError(f"Missing mandatory columns: {missing_names}")
 
 
-def create_unified_dataframe(df, bank):
-    """
-    Creates a unified DataFrame with standardized headers from a bank-specific DataFrame.
+# def create_unified_dataframe(df: pd.DataFrame, bank: banks.Bank) -> pd.DataFrame:
+#     """
+#     Creates a unified DataFrame with standardized headers from a bank-specific DataFrame.
     
-    Args:
-        df (pd.DataFrame): Source DataFrame with bank-specific headers
-        bank (Bank): Bank instance containing header mapping rules
+#     Args:
+#         df (pd.DataFrame): Source DataFrame with bank-specific headers
+#         bank (Bank): Bank instance containing header mapping rules
         
-    Returns:
-        pd.DataFrame: New DataFrame with unified headers
-    """
-   
+#     Returns:
+#         pd.DataFrame: New DataFrame with unified headers
+#     """
+    
+#     unified_df = pd.DataFrame(columns=list(UnifiedHeaders.get_all_columns().keys()))
+        
+#     return unified_df
 

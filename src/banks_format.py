@@ -12,16 +12,6 @@ class Bank:
     CSV_ENCODINGS = ["utf-8", "cp1252", "ISO-8859-1"]
     CSV_DELIMITERS = [";", ","]
     
-    header_map: Dict[str, udb.BankParamType]
-    name: str = "Bank"
-    csv_encoding: str = "utf-8"
-    csv_delimiter: str = ","
-    description: str = ""
-    csv_header_row: int = 0
-    csv_last_row: int = 0
-    csv_filename: str = "importar.csv"
-    #TODO check double default required?
-
     def __init__(self, name="Bank",  header_map=None, csv_encoding="utf-8", csv_delimiter=",", description="", csv_header_row=0, csv_last_row=0, csv_filename="importar.csv"):
         self.name = name
         self.description = description
@@ -30,7 +20,7 @@ class Bank:
         else:
             self.header_map = header_map
         for key, value in self.header_map.items():
-            if not isinstance(value, udb.BankParamType):
+            if not isinstance(value, udb.BankEntryType):
                 raise ValueError(f"Header mapping for '{key}' must be a udb.BankParamType instance, got {type(value)} instead.")
 
         self.csv_encoding = csv_encoding
@@ -59,7 +49,7 @@ class Bank:
         )
 
         #Validates that all mandatory columns are present in the header mapping
-        udb.Columns.validate_column_mapping(self.header_map)
+        udb.UnifiedHeaders.validate_column_mapping(self.header_map)
 
     def __str__(self):
         return f"{self.name}"
@@ -73,8 +63,8 @@ def check_mandatory_columns(self):
         ValueError: If any mandatory columns are not mapped in header_map
     """
     # Get all mandatory column attributes from udb.columns
-    mandatory_columns = udb.get_mandatory_columns()
-    
+    mandatory_columns = udb.UnifiedHeaders.get_mandatory_columns()
+
     # Get all columns that are mapped in the header_map
     mapped_columns = list(self.header_map.values())
     
@@ -130,17 +120,17 @@ class N26(Bank):
                 #"Amount (Foreign Currency)": udb.columns.unused,
                 #"Type Foreign Currency":    udb.columns.unused,
                 #"Exchange Rate":            udb.columns.unused,
-                "Booking Date":             udb.Columns.date,
-                "Value Date":               udb.Columns.unused,
-                "Partner Name":             udb.Columns.origin,
-                "Partner Iban":             udb.Columns.iban,
-                "Type":                     udb.Columns.transaction_type,
-                "Payment Reference":        udb.Columns.description,
-                "Account Name":             udb.Columns.unused,
-                "Amount (EUR)":             udb.Columns.amount,
-                "Original Amount":          udb.Columns.unused,
-                "Original Currency":        udb.Columns.unused,
-                "Exchange Rate":            udb.Columns.unused,
+                "Booking Date":             udb.UnifiedHeaders.date,
+                "Value Date":               udb.UnifiedHeaders.unused,
+                "Partner Name":             udb.UnifiedHeaders.origin,
+                "Partner Iban":             udb.UnifiedHeaders.iban,
+                "Type":                     udb.UnifiedHeaders.transaction_type,
+                "Payment Reference":        udb.UnifiedHeaders.description,
+                "Account Name":             udb.UnifiedHeaders.unused,
+                "Amount (EUR)":             udb.UnifiedHeaders.amount,
+                "Original Amount":          udb.UnifiedHeaders.unused,
+                "Original Currency":        udb.UnifiedHeaders.unused,
+                "Exchange Rate":            udb.UnifiedHeaders.unused,
             } 
         )
 
@@ -153,14 +143,14 @@ class Abanca(Bank):
             csv_header_row=0,
             csv_filename="importar.csv",
             header_map = {
-                "Fecha ctble":      udb.Columns.date,
-                "Fecha valor":      udb.Columns.unused,
-                "Concepto":         udb.Columns.description,
-                "Importe":          udb.Columns.amount,
-                "Moneda":           udb.Columns.unused,
-                "Saldo":            udb.Columns.unused, # TODO saldo!
-                "Moneda 2":         udb.Columns.unused,
-                "Concepto ampliado":udb.Columns.info_extended,
+                "Fecha ctble":      udb.UnifiedHeaders.date,
+                "Fecha valor":      udb.UnifiedHeaders.unused,
+                "Concepto":         udb.UnifiedHeaders.description,
+                "Importe":          udb.UnifiedHeaders.amount,
+                "Moneda":           udb.UnifiedHeaders.unused,
+                "Saldo":            udb.UnifiedHeaders.unused, # TODO saldo!
+                "Moneda 2":         udb.UnifiedHeaders.unused,
+                "Concepto ampliado":udb.UnifiedHeaders.info_extended,
             }
         )
         
@@ -175,24 +165,24 @@ class DB(Bank):
             csv_last_row=-1,
             csv_filename="importar.csv",
             header_map = {
-                "Buchungstag":                  udb.Columns.date,
-                "Wert":                         udb.Columns.unused, #Date 2
-                "Umsatzart":                    udb.Columns.transaction_type,
-                "Begünstigter / Auftraggeber":  udb.Columns.origin,
-                "Verwendungszweck":             udb.Columns.description,
-                "IBAN":                         udb.Columns.iban,
-                "BIC":                          udb.Columns.info_extended,
-                "Kundenreferenz":               udb.Columns.info_extended,
-                "Mandatsreferenz ":             udb.Columns.unused,
-                "Gläubiger ID":                 udb.Columns.unused,
-                "Fremde Gebühren":              udb.Columns.unused,
-                "Betrag":                       udb.Columns.amount,
-                "Abweichender Empfänger":       udb.Columns.unused,
-                "Abweichender Auftraggeber":    udb.Columns.unused,
-                "Anzahl der Aufträge":          udb.Columns.unused,
-                "Anzahl der Schecks":           udb.Columns.unused,
-                "Soll":                         udb.Columns.amount,
-                "Haben":                        udb.Columns.unused,
-                "Währung":                      udb.Columns.unused
+                "Buchungstag":                  udb.UnifiedHeaders.date,
+                "Wert":                         udb.UnifiedHeaders.unused, #Date 2
+                "Umsatzart":                    udb.UnifiedHeaders.transaction_type,
+                "Begünstigter / Auftraggeber":  udb.UnifiedHeaders.origin,
+                "Verwendungszweck":             udb.UnifiedHeaders.description,
+                "IBAN":                         udb.UnifiedHeaders.iban,
+                "BIC":                          udb.UnifiedHeaders.info_extended,
+                "Kundenreferenz":               udb.UnifiedHeaders.info_extended,
+                "Mandatsreferenz ":             udb.UnifiedHeaders.unused,
+                "Gläubiger ID":                 udb.UnifiedHeaders.unused,
+                "Fremde Gebühren":              udb.UnifiedHeaders.unused,
+                "Betrag":                       udb.UnifiedHeaders.amount,
+                "Abweichender Empfänger":       udb.UnifiedHeaders.unused,
+                "Abweichender Auftraggeber":    udb.UnifiedHeaders.unused,
+                "Anzahl der Aufträge":          udb.UnifiedHeaders.unused,
+                "Anzahl der Schecks":           udb.UnifiedHeaders.unused,
+                "Soll":                         udb.UnifiedHeaders.amount,
+                "Haben":                        udb.UnifiedHeaders.unused,
+                "Währung":                      udb.UnifiedHeaders.unused
             }
         )
