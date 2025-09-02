@@ -21,19 +21,18 @@ for bank_cls in banks_format.Bank.__subclasses__():
     bank = bank_cls()  # instantiate the bank
     print("")
     print("")
-    print(f"Processing bank: {bank}")
+    print(f"Processing bank: {bank.name}")
     print("==========================")
     csv_path = f"{banks_base_path}\\{bank}\\{bank.csv_filename}"
     
     df = csv_processor.load_csv_file(csv_path, bank)
     
-    csv_processor.print_csv_info(df, bank)
-        
+    csv_processor.print_csv_info(df, bank.name)
+    csv_processor.validate_csv_headers(df, bank)
+    
     # Create unified DataFrame
-    unified_df = csv_processor.create_unified_dataframe(df, bank)
+    #unified_df = csv_processor.create_unified_dataframe(df, bank)
 
-    print("\nUnified DataFrame Info:")
-    csv_processor.print_csv_info(unified_df, f"{bank} (Unified)")
+    #print("\nUnified DataFrame Info:")
+    #csv_processor.print_csv_info(unified_df, f"{bank} (Unified)")
 
-    # Validate unified DataFrame
-    csv_processor.validate_dataframe(unified_df, bank)
