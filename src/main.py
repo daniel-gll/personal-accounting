@@ -3,6 +3,7 @@ import pandas as pd
 import yaml_config as yaml_config
 import csv_processor as csv_processor
 import banks_format as banks_format
+import unified_format as udb
 from utils.utils import log, setup_logging, print_processing_summary
 
 # TODO: in DB, read top rows of the CSV file and read the starting balance
@@ -21,20 +22,21 @@ log.info("\n" + f"Using banks base path: {banks_base_path}")
 # Load CSV file for each bank
 csv_results = {}
 for bank_cls in banks_format.Bank.__subclasses__():
-    bank = bank_cls()  # instantiate the bank
-    log.info("\n" + f"Processing bank: {bank.name}")
-    log.info("="*30)
-    # Use os.path.join for better path handling across operating systems
-    csv_path = os.path.join(banks_base_path, str(bank), bank.csv_filename)
+    try:
+        bank = bank_cls()  # instantiate the bank
+        log.info("\n" + f"Processing bank: {bank.name}")
+        log.info("="*30)
                 
-    df = csv_processor.load_csv_file(csv_path, bank)
-    
-    csv_processor.print_csv_info(df, bank.name)
-    csv_processor.validate_csv_headers(df, bank)
-    
-    csv_results[bank.name] = True
+        df = csv_processor.load_csv_file(os.path.join(banks_base_path, bank.name, bank.csv_filename), bank)
         
-    
+        csv_results[bank.name] = True
+        
+    except ValueError as e:
+        # Extract only the error message without the traceback
+        log.error(f"Error processing bank {bank_cls.__name__}: {str(e)}")
+        csv_results[bank_cls.__name__] = False
+        continue
+      
     # Create unified DataFrame
     #unified_df = csv_processor.create_unified_dataframe(df, bank)
     #log.info("\nUnified DataFrame Info:")

@@ -49,37 +49,10 @@ class Bank:
         )
 
         #Validates that all mandatory columns are present in the header mapping
-        udb.UnifiedHeaders.validate_column_mapping(self.header_map)
+        udb.UnifiedHeaders.validate_minimum_column_mapping(self.header_map, self.name)
 
     def __str__(self):
         return f"{self.name}"
-
-def check_mandatory_columns(self):
-    """
-    Checks if all mandatory unified_format columns are mapped in the bank's header_map.
-    Raises an error if any mandatory columns are not mapped.
-    
-    Raises:
-        ValueError: If any mandatory columns are not mapped in header_map
-    """
-    # Get all mandatory column attributes from udb.columns
-    mandatory_columns = udb.UnifiedHeaders.get_mandatory_columns()
-
-    # Get all columns that are mapped in the header_map
-    mapped_columns = list(self.header_map.values())
-    
-    # Find unmapped mandatory columns
-    unmapped_mandatory = {attr: col for col, attr in mandatory_columns.items() 
-                         if col not in mapped_columns}
-    
-    # Raise error if there are unmapped mandatory columns
-    if unmapped_mandatory:
-        mandatory_names = ", ".join(f"'{attr}'" for attr in unmapped_mandatory.keys())
-        raise ValueError(
-            f"Missing mandatory column mappings in {self.name}'s header_map: {mandatory_names}. "
-            f"These columns must be mapped to CSV headers."
-        )
-        
 
     @classmethod
     def get_banks_list(cls):
@@ -149,6 +122,7 @@ class Abanca(Bank):
                 "Importe":          udb.UnifiedHeaders.amount,
                 "Moneda":           udb.UnifiedHeaders.unused,
                 "Saldo":            udb.UnifiedHeaders.unused, # TODO saldo!
+                "Moneda.1":         udb.UnifiedHeaders.unused,
                 "Moneda 2":         udb.UnifiedHeaders.unused,
                 "Concepto ampliado":udb.UnifiedHeaders.info_extended,
             }

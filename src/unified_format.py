@@ -84,9 +84,11 @@ class UnifiedHeaders:
         return all_cols
     
     @classmethod
-    def validate_column_mapping(cls, header_map: Dict) -> None:
+    def validate_minimum_column_mapping(cls, header_map: Dict, bank_name: str) -> None:
         """Validates that all mandatory columns are present in the header mapping."""
+        # Get all mandatory columns
         mandatory = cls.get_mandatory_columns()
+        # Get all columns that are mapped in the header_map
         mapped_columns = set(header_map.values())
         
         missing = [name for name, col in mandatory.items() 
@@ -94,22 +96,5 @@ class UnifiedHeaders:
         
         if missing:
             missing_names = ", ".join(missing)
-            raise ValueError(f"Missing mandatory columns: {missing_names}")
-
-
-# def create_unified_dataframe(df: pd.DataFrame, bank: banks.Bank) -> pd.DataFrame:
-#     """
-#     Creates a unified DataFrame with standardized headers from a bank-specific DataFrame.
-    
-#     Args:
-#         df (pd.DataFrame): Source DataFrame with bank-specific headers
-#         bank (Bank): Bank instance containing header mapping rules
-        
-#     Returns:
-#         pd.DataFrame: New DataFrame with unified headers
-#     """
-    
-#     unified_df = pd.DataFrame(columns=list(UnifiedHeaders.get_all_columns().keys()))
-        
-#     return unified_df
+            raise ValueError(f"Missing mandatory columns {missing_names} in header_map of bank '{bank_name}'. Please add it to the header mapping.")
 
