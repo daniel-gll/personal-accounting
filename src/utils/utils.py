@@ -38,20 +38,15 @@ class ColorFormatter(log.Formatter):
             return f"{color}{message}{Style.RESET_ALL}"
         return message
 
-def setup_logging(show_time=False, show_logger=False, show_level=False):
+def setup_logging(show_time=False, show_logger=False, show_level=False, log_to_file=False):
     """
     Configure logging with optional display of time/date, logger name, and log level.
     Args:
         show_time (bool): Include timestamp in log output
         show_logger (bool): Include logger name in log output
         show_level (bool): Include log level in log output
+        log_to_file (bool): Enable or disable logging to a file
     """
-    log_dir = "logs"
-    os.makedirs(log_dir, exist_ok=True)
-
-    # Configure file handler with timestamp in filename
-    log_file = os.path.join(log_dir, f"accounting_{datetime.now():%Y%m%d_%H%M%S}.log")
-
     # Build log format string
     format_parts = []
     if show_time:
@@ -63,9 +58,17 @@ def setup_logging(show_time=False, show_logger=False, show_level=False):
     format_parts.append('%(message)s')
     log_format = ' - '.join(format_parts)
 
-    # File handler (no color)
-    file_handler = log.FileHandler(log_file)
-    file_handler.setFormatter(log.Formatter(log_format))
+    # Initialize handlers list
+    handlers = []
+
+    # Add file handler if enabled
+    if log_to_file:
+        log_dir = "logs"
+        os.makedirs(log_dir, exist_ok=True)
+        log_file = os.path.join(log_dir, f"accounting_{datetime.now():%Y%m%d_%H%M%S}.log")
+        file_handler = log.FileHandler(log_file)
+        file_handler.setFormatter(log.Formatter(log_format))
+        handlers.append(file_handler)
 
     # Console handler (with color if available)
     stream_handler = log.StreamHandler()
@@ -73,10 +76,11 @@ def setup_logging(show_time=False, show_logger=False, show_level=False):
         stream_handler.setFormatter(ColorFormatter(log_format))
     else:
         stream_handler.setFormatter(log.Formatter(log_format))
+    handlers.append(stream_handler)
 
     log.basicConfig(
         level=log.INFO,
-        handlers=[file_handler, stream_handler]
+        handlers=handlers
     )
     
 def print_processing_summary(results):
